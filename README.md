@@ -2,7 +2,7 @@
 
 # `esp32-yeelight-timer`
 
-**Yeelight Candela BLE 램프용 단독 타이머.**
+**Yeelight Candela BLE 램프용 단독 타이머.**<br/>
 ESP32-C3 보드 하나로 매일 정해진 시각에 램프 켜기와 끄기. Home Assistant, 클라우드, 앱 불필요.
 
 [![License](https://img.shields.io/badge/license-MIT-89b4fa?style=flat-square&labelColor=1e1e2e)](LICENSE)
@@ -13,7 +13,7 @@ ESP32-C3 보드 하나로 매일 정해진 시각에 램프 켜기와 끄기. Ho
 <br/>
 
 ```bash
-git clone https://github.com/hungryZoo/esp32-yeelight-timer && cd esp32-yeelight-timer && cp include/secrets.h.example include/secrets.h
+git clone https://github.com/hungryZoo/esp32-yeelight-timer
 ```
 
 <!-- TODO: 장치 사진 (docs/images/device.jpg 추가 또는 GitHub 업로드 주소로 교체) -->
