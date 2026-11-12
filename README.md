@@ -17,7 +17,7 @@ git clone https://github.com/hungryZoo/esp32-yeelight-timer
 ```
 
 <!-- TODO: 장치 사진 (docs/images/device.jpg 추가 또는 GitHub 업로드 주소로 교체) -->
-<img src="docs/images/device.jpg" alt="0.42인치 OLED에 현재 시각, 다음 예약, BLE 상태, IP를 표시하는 ESP32-C3 타이머와 Yeelight Candela 램프" width="780" />
+<img width="3024" height="3218" alt="main" src="https://github.com/user-attachments/assets/e7c726e2-c2cd-487f-9083-4e0ec7f8ae1d" />
 
 </div>
 
