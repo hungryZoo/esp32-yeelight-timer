@@ -16,22 +16,44 @@ ESP32-C3 보드 하나로 매일 정해진 시각에 램프 켜기와 끄기. Ho
 git clone https://github.com/hungryZoo/esp32-yeelight-timer
 ```
 
-<!-- TODO: 장치 사진 (docs/images/device.jpg 추가 또는 GitHub 업로드 주소로 교체) -->
-<img width="3024" height="3218" alt="main" src="https://github.com/user-attachments/assets/e7c726e2-c2cd-487f-9083-4e0ec7f8ae1d" />
+<img width="756" height="804" alt="main" src="https://github.com/user-attachments/assets/ab301b7d-565d-4f2c-ba31-9afc729851f3" />
+
 
 </div>
 
 ---
-
-전원 연결 후 WiFi 연결, NTP 시각 동기화, Candela BLE 연결 순서로 동작 시작.
-이후 매일 ON 시각에 램프 켜기, OFF 시각에 램프 끄기 반복. ON 구간 중 재부팅이나 정전 복구 시 부팅 직후 즉시 켜기.
-0.42인치 OLED에 현재 시각, 다음 예약, 연결 상태, IP 표시.
-같은 WiFi의 브라우저에서 `http://candela-timer.local` 접속으로 전원, 밝기, 스케줄, 페어링 제어.
+```mermaid
+flowchart LR
+    lamp["Yeelight Candela<br>(yl_candela)"] <-- BLE --> esp["ESP32-C3-OLED<br>candela-timer.local"]
+    esp <-- WiFi --> router["공유기"]
+    router <-- WiFi --> phone["휴대폰/PC 브라우저"]
+    router -. NTP .-> ntp["시간 서버"]
+```
+* 전원 연결 후 WiFi 연결, NTP 시각 동기화, Candela BLE 연결.
+* 이후 매일 ON 시각에 램프 켜기, OFF 시각에 램프 끄기 반복.
+* 0.42인치 OLED에 현재 시각, 다음 예약, 연결 상태, IP 표시.
+* 같은 WiFi의 브라우저에서 `http://candela-timer.local` 접속으로 전원, 밝기, 스케줄, 페어링 제어.
 BLE 끊김 시 자동 재연결, 펌웨어 갱신은 WiFi OTA 지원.
+
 
 <div align="center">
 
-<!-- TODO: 데모 영상. GitHub 웹 편집기에서 영상 파일을 끌어다 놓으면 생성되는 https://github.com/user-attachments/assets/... 주소를 이 줄 대신 입력 -->
+
+
+
+
+https://github.com/user-attachments/assets/812b299f-034d-4afa-9b6c-550d706befb8
+
+
+
+https://github.com/user-attachments/assets/d2e4e14f-0797-406d-89de-95b24b96933b
+
+
+
+<img width="806" height="1131" alt="스크린샷 2026-11-12 오후 9 41 07" src="https://github.com/user-attachments/assets/035b4d1b-6898-40ad-bbdc-8f15580eae78" />
+
+
+
 
 </div>
 
