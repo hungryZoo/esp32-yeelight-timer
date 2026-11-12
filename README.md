@@ -41,6 +41,8 @@ BLE 끊김 시 자동 재연결, 펌웨어 갱신은 WiFi OTA 지원.
 
 1. [개요](#1-개요)
    - [기능](#기능)
+   - [시스템 구성](#시스템-구성)
+   - [펌웨어 구조](#펌웨어-구조)
    - [동작 방식](#동작-방식)
 2. [하드웨어](#2-하드웨어)
    - [준비물](#준비물)
@@ -64,6 +66,7 @@ BLE 끊김 시 자동 재연결, 펌웨어 갱신은 WiFi OTA 지원.
    - [GATT 구성](#gatt-구성)
    - [명령](#명령)
    - [알림](#알림)
+   - [연결 순서](#연결-순서)
    - [실측 동작](#실측-동작)
 8. [개발](#8-개발)
    - [저장소 구성](#저장소-구성)
@@ -90,6 +93,66 @@ Yeelight Candela는 WiFi 없이 BLE로만 제어되는 램프.
 - **BOOT 버튼**: 짧게 눌러 전원 토글, 3초 유지로 페어링 시작.
 - **WiFi OTA**: ArduinoOTA 비밀번호 인증 기반 무선 펌웨어 갱신.
 - **설정 유지**: 스케줄, 페어링 이력, 램프 주소를 NVS에 저장. 펌웨어 갱신 후에도 유지.
+
+### 시스템 구성
+
+ESP32-C3가 WiFi 쪽(브라우저, OTA, NTP)과 BLE 쪽(Candela) 사이 중계 담당. 램프와의 연결은 BLE 단일 경로.
+
+```mermaid
+flowchart TB
+    subgraph Clients["WiFi 클라이언트"]
+        Browser["브라우저<br/>(휴대폰, PC)"]
+        DevPC["개발 PC<br/>(PlatformIO)"]
+    end
+
+    AP(["WiFi 공유기<br/>2.4GHz"])
+    NTP[("NTP 서버<br/>(인터넷)")]
+    MCU["ESP32-C3 타이머<br/>WiFi + BLE<br/>OLED, 버튼"]
+    Lamp["Yeelight Candela<br/>BLE Peripheral"]
+
+    Browser -->|"HTTP :80"| AP
+    DevPC -->|"OTA :3232"| AP
+    AP -->|"SNTP"| NTP
+    AP <-->|"WiFi"| MCU
+    DevPC -.->|"USB 시리얼"| MCU
+    MCU <==>|"BLE GATT FE87<br/>명령 Write, 상태 Notify"| Lamp
+```
+
+### 펌웨어 구조
+
+BLE 통신은 전용 FreeRTOS 태스크에서만 수행. 웹, 버튼, 스케줄, 시리얼은 요청 플래그만 설정하므로 BLE 연결 대기 중에도 다른 기능이 멈추지 않는 구조.
+
+```mermaid
+flowchart LR
+    subgraph Req["요청 (loop 태스크)"]
+        Main["main.cpp<br/>버튼, 시리얼"]
+        Web["web.cpp<br/>웹 페이지, API"]
+        Sched["schedule.cpp<br/>매일 ON/OFF"]
+    end
+
+    Flags{{"요청 플래그"}}
+
+    subgraph BleTask["BLE 전용 태스크"]
+        Candela["candela.cpp<br/>연결, 재연결, 인증<br/>명령, 30초 상태 요청"]
+    end
+
+    Lamp["Yeelight<br/>Candela"]
+    State[("램프 상태")]
+    NVS[("NVS")]
+
+    subgraph Show["표시 (loop 태스크)"]
+        Disp["display.cpp<br/>OLED"]
+        Api["web.cpp<br/>/api/status"]
+    end
+
+    Main & Web & Sched --> Flags
+    Flags --> Candela
+    Candela <==>|"BLE"| Lamp
+    Candela --> State
+    State --> Disp & Api
+    Sched <-.->|"스케줄"| NVS
+    Candela <-.->|"페어링, 주소"| NVS
+```
 
 ### 동작 방식
 
@@ -345,6 +408,35 @@ MTU 23.
 | `43 45 PP BB ..` | 상태. PP `01` 켜짐, `02` 꺼짐. BB 밝기 |
 | `43 63 01` | 페어링 모드 진입 (램프 깜빡임) |
 | `43 63 02` | 페어링 완료 또는 인증 성공 |
+
+### 연결 순서
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant U as 사용자
+    participant T as ESP32-C3 BLE 태스크
+    participant L as Yeelight Candela
+
+    Note over T: 저장 주소 없으면 8초 스캔<br/>(이름 yeelight_ms 또는 서비스 FE87)
+    T->>L: GATT 연결, FE87 탐색, Notify 구독
+    alt 페어링 요청 (BOOT 3초, 웹, 시리얼 pair)
+        T->>L: 43 67 02 (페어링)
+        L-->>T: 43 63 01 (페어링 모드, 램프 깜빡임)
+        U->>L: 90초 안에 램프 링 회전
+        L-->>T: 43 63 02 (페어링 완료, NVS 저장)
+    else 페어링 이력 있음
+        T->>L: 43 67 02 (인증)
+        L-->>T: 43 63 02 (깜빡임 없이 즉시 응답)
+    end
+    T->>L: 43 44 (상태 요청)
+    L-->>T: 43 45 PP BB (전원, 밝기)
+    opt 전원, 밝기 명령 (BLE 끊김 중 보류 명령 포함)
+        T->>L: 43 40 01, 43 40 02, 43 42 XX
+        L-->>T: 43 45 PP BB (명령마다 즉시)
+    end
+    Note over T,L: 30초마다 43 44 상태 요청 (연결 유지 겸용)<br/>끊김 시 2초에서 60초까지 2배씩 늘어나는 백오프 재연결
+```
 
 ### 실측 동작
 
