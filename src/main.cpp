@@ -12,6 +12,20 @@
 #include "schedule.h"
 #include "web.h"
 
+// secrets.h 예시 값 그대로 빌드 방지 (tools/check_secrets.py 와 같은 규칙, 빌드 전 점검을 거치지 않는 경우 대비)
+namespace secrets_check {
+constexpr bool same(const char* a, const char* b) { return *a == *b && (*a == '\0' || same(a + 1, b + 1)); }
+}  // namespace secrets_check
+static_assert(sizeof(WIFI_SSID) > 1 && !secrets_check::same(WIFI_SSID, "your-ssid"),
+              "include/secrets.h: WIFI_SSID 를 실제 WiFi 이름으로 입력하세요");
+static_assert(sizeof(WIFI_SSID) <= 33, "include/secrets.h: WIFI_SSID 는 32바이트 이하");
+static_assert(!secrets_check::same(WIFI_PASSWORD, "your-password"),
+              "include/secrets.h: WIFI_PASSWORD 를 실제 비밀번호로 입력하세요");
+static_assert(sizeof(WIFI_PASSWORD) == 1 || (sizeof(WIFI_PASSWORD) >= 9 && sizeof(WIFI_PASSWORD) <= 65),
+              "include/secrets.h: WIFI_PASSWORD 는 8-64자 (개방형 네트워크는 빈 문자열)");
+static_assert(sizeof(OTA_PASSWORD) > 1 && !secrets_check::same(OTA_PASSWORD, "change-me"),
+              "include/secrets.h: OTA_PASSWORD 를 입력하세요 (예시 값 change-me 사용 불가)");
+
 namespace {
 
 constexpr uint32_t STAT_LOG_MS = 600000;   // 주기 상태 요약 로그 (10분). 즉시 확인은 시리얼 info 또는 웹

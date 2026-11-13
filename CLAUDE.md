@@ -24,6 +24,7 @@ Yeelight Candela(BLE 전용 램프)를 정해진 시각에 켜고 끄는 단독 
 | `src/log.*` | 시리얼 로그 + 최근 60줄 링버퍼 (웹 `/api/log`) |
 | `src/main.cpp` | setup/loop, 버튼, ArduinoOTA, 시리얼 명령 |
 | `tools/serial_console.py` | 로그 수신 + 시각 지정 명령 전송 (`logs/`에 저장) |
+| `tools/check_secrets.py` | pre 스크립트. `secrets.h` 없음 또는 예시 값이면 `/dev/tty`로 입력받아 작성, 터미널 없으면 안내 후 빌드 중단. `main.cpp` `static_assert`도 같은 규칙 |
 | `tools/ota_auth.py` | OTA 업로드 시 `secrets.h`의 `OTA_PASSWORD`를 espota `--auth`로 전달 |
 
 ## 명령

@@ -232,12 +232,34 @@ VS Code의 PlatformIO IDE 확장 사용도 가능. 라이브러리(NimBLE-Arduin
 
 ### WiFi 정보 입력
 
+첫 빌드 시 [`tools/check_secrets.py`](tools/check_secrets.py)가 `include/secrets.h`를 점검. 파일이 없거나 예시 값 그대로면 터미널에서 값을 물어보고 파일 자동 작성.
+
+```text
+==================================================================
+ WiFi 설정 (최초 1회): include/secrets.h 작성
+ 입력값은 이 컴퓨터의 include/secrets.h 에만 저장 (.gitignore 대상)
+==================================================================
+WiFi 이름 (2.4GHz SSID): MyHome-2.4G
+WiFi 비밀번호 (입력 숨김, 개방형 네트워크는 Enter):
+WiFi 비밀번호 확인:
+OTA 업로드 비밀번호 (Enter = 자동 생성 Xq3v...):
+
+ -> include/secrets.h 저장 완료, 빌드 계속
+```
+
+터미널 입력이 불가능한 환경(CI, 일부 IDE 빌드 버튼)에서는 안내 문구 출력 후 빌드 중단. 이 경우 직접 작성.
+
 ```bash
 cp include/secrets.h.example include/secrets.h
 ```
 
-`include/secrets.h`에 WiFi 이름, 비밀번호, OTA 비밀번호 입력. 이 파일은 `.gitignore` 대상.
-파일이 없으면 빌드 단계에서 `include/secrets.h 없음` 오류로 중단. 항목은 [secrets.h](#secretsh) 참고.
+| 점검 항목 | 규칙 |
+| --- | --- |
+| `WIFI_SSID` | 빈 값, 예시 값(`your-ssid`) 불가. 32바이트 이하 |
+| `WIFI_PASSWORD` | 예시 값(`your-password`) 불가. 8-64자, 개방형 네트워크는 빈 문자열 |
+| `OTA_PASSWORD` | 빈 값, 예시 값(`change-me`) 불가 |
+
+같은 규칙을 [`src/main.cpp`](src/main.cpp)의 `static_assert`로도 검사해 예시 값으로는 컴파일 불가. 값 변경은 `include/secrets.h` 직접 수정 후 재빌드. 항목은 [secrets.h](#secretsh) 참고.
 
 ### 첫 업로드 (USB)
 
@@ -264,7 +286,7 @@ mDNS 이름 해석 실패 시 `--upload-port <장치 IP>` 지정. 장치 IP는 O
 
 ## 4. 빠른 시작
 
-1. `secrets.h`에 WiFi 정보 입력 후 `pio run -t upload`.
+1. `pio run -t upload` 실행 후 터미널 질문에 WiFi 이름, 비밀번호, OTA 비밀번호 입력 (최초 1회).
 2. WiFi 연결과 NTP 동기화(최대 약 20초 대기) 후 OLED에 현재 시각 표시.
 3. 램프 주소 자동 탐색. 광고 이름 `yeelight_ms` 또는 서비스 FE87을 8초간 스캔, 발견 주소 NVS 저장.
 4. 최초 1회 페어링. BOOT 버튼 3초 유지 → OLED `PAIRING / TURN THE RING` 표시와 램프 깜빡임 → 90초 안에 램프 링 회전 → 페어링 완료.
@@ -485,6 +507,7 @@ sequenceDiagram
 | [`src/log.cpp`](src/log.cpp) | 시리얼 로그와 최근 60줄 링버퍼 |
 | [`src/main.cpp`](src/main.cpp) | setup/loop, 버튼, ArduinoOTA, 시리얼 명령 |
 | [`tools/serial_console.py`](tools/serial_console.py) | 로그 수신, 시각 지정 명령 전송, `logs/` 저장 |
+| [`tools/check_secrets.py`](tools/check_secrets.py) | 빌드 전 `secrets.h` 점검, 없거나 예시 값이면 터미널 입력으로 작성 |
 | [`tools/ota_auth.py`](tools/ota_auth.py) | OTA 업로드 시 `OTA_PASSWORD` 전달 |
 
 빌드 환경은 `espressif32` 플랫폼 Arduino 프레임워크, 파티션 `min_spiffs.csv`(OTA 2슬롯, 앱 1.9MB).
