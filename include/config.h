@@ -38,7 +38,7 @@ constexpr uint32_t WIFI_RETRY_MS      = 15000;      // 끊김 지속 시 재연�
 #ifndef LAMP_MAC
 #define LAMP_MAC   ""
 #endif
-// Candela 광고 이름 (yl_candela 아님, 실측)
+// Candela 광고 이름 (ESP32 스캔 실측. iOS 앱 목록 표시 이름 yl_candela 와 다름)
 #define LAMP_NAME  "yeelight_ms"
 
 // Candela GATT (광고 서비스와 제어 서비스 모두 16-bit FE87)

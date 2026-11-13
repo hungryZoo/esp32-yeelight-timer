@@ -7,7 +7,7 @@ Yeelight Candela(BLE 전용 램프)를 정해진 시각에 켜고 끄는 단독 
 - OLED: SSD1306 72x40, I2C SDA=GPIO5, SCL=GPIO6. U8g2 `72X40_ER` 드라이버 사용 (x 오프셋 28 내장, `OLED_X_OFFSET`로 조정)
 - BOOT 버튼: GPIO9 (짧게 = 수동 토글, 3초 유지 = 페어링)
 - 시리얼 포트: `/dev/cu.usbmodem101` (Espressif USB JTAG/serial debug unit). BOOT 버튼 없이 자동 다운로드 모드 진입
-- 램프: public 주소, 광고 이름 `yeelight_ms` (`yl_candela` 아님), 광고 서비스 FE87. 주소 고정은 `secrets.h`의 `LAMP_MAC` (미지정 시 스캔 후 NVS 저장)
+- 램프: public 주소, 광고 이름 `yeelight_ms` (ESP32 스캔 실측. iOS LightBlue 목록 표시 이름은 `yl_candela`), 광고 서비스 FE87. 주소 고정은 `secrets.h`의 `LAMP_MAC` (미지정 시 스캔 후 NVS 저장)
 - 네트워크: DHCP, mDNS `candela-timer.local`
 - 장치별 값(램프 주소, IP)은 `CLAUDE.local.md` (gitignore)
 

@@ -421,7 +421,7 @@ macOS에서 `.local` 이름 해석이 3-5초 지연되면 `curl -4` 또는 IP �
 
 ## 7. Candela BLE 프로토콜
 
-이 펌웨어 개발 과정에서 실제 램프로 확인한 값. 광고 이름은 `yl_candela`가 아닌 `yeelight_ms`(실측).
+이 펌웨어 개발 과정에서 실제 램프로 확인한 값. 광고 이름은 ESP32 스캔 기준 `yeelight_ms`(실측). iOS LightBlue 등 앱 목록 표시 이름은 `yl_candela`.
 
 ### GATT 구성
 
